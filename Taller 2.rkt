@@ -110,11 +110,11 @@
   )
 
 (define-datatype Data-vertices Data-vertices?
-  (vertices-exp (list (list-of symbol?)))
+  (vertices-exp (vertices-list (list-of symbol?)))
   )
 
 (define-datatype Data-edges Data-edges?
-  (edges-exp (list (list-of Data-edge?)))
+  (edges-exp (edges-list (list-of Data-edge?)))
   )
 
 (define-datatype Data-edge Data-edge?
@@ -124,11 +124,11 @@
 
 ;Función PARSEBNF
 
-(define map
+(define parseMap
   (lambda (l1)
     (if (null? l1)
         empty
-        (cons (edge-exp (caar l1) (cadar l1)) (map (cdr l1)))
+        (cons (edge-exp (caar l1) (cadar l1)) (parseMap (cdr l1)))
         )
     )
   )
@@ -139,9 +139,56 @@
       [(eqv? (car dato) 'graph) (graph-exp (PARSEBNF (cadr dato)) (PARSEBNF (caddr dato)))]
       [(eqv? (car dato) 'vertices) (vertices-exp (cadr dato))]
       [(eqv? (car dato) 'edges) (edges-exp (PARSEBNF (cons 'edge (cadr dato))))]
-      [(eqv? (car dato) 'edge) (map (cdr dato))]
+      [(eqv? (car dato) 'edge) (parseMap (cdr dato))]
       )
     )
   )
       
 ;Función UNPARSEBNF
+
+(define UNPARSEBNF
+  (lambda (exp)
+    (cases Data-graph exp
+      (graph-exp (vertices-exp edges-exp)
+                 (list 'graph (UNPARSEBNF-vertices vertices-exp) (UNPARSEBNF-edges edges-exp)))
+      )
+    )
+  )
+
+(define UNPARSEBNF-vertices
+  (lambda (exp)
+    (cases Data-vertices exp
+      (vertices-exp (vertices-list)
+                    (list 'vertices vertices-list))
+      )
+    )
+  )
+
+(define UNPARSEBNF-edges
+  (lambda (exp)
+    (cases Data-edges exp
+      (edges-exp (edges-list)
+                 (cons 'edges (list (unparseMap edges-list))))
+      )
+    )
+  )
+
+(define unparseMap
+  (lambda (l1)
+    (if (null? l1)
+        empty
+        (cons (UNPARSEBNF-edge (car l1)) (unparseMap (cdr l1)))
+        )
+    )
+  )
+
+(define UNPARSEBNF-edge
+  (lambda (exp)
+    (if (null? exp)
+        empty
+        (cases Data-edge exp
+          (edge-exp (a b)
+                    (list a b)))
+        )
+    )
+  )
