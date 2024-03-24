@@ -192,3 +192,49 @@
         )
     )
   )
+
+; parte 3 del taller y posibles soluciones a los enunciados 
+
+
+
+(define add-edge
+  (lambda (graph edge)
+    (let* ((edges (graph->edges graph))
+           (vertices (graph->vertices graph))
+           (new-edge (list (car edge) (cadr edge)))
+           (reverse-edge (list (cadr edge) (car edge))))
+      (if (or (member new-edge edges) (member reverse-edge edges))
+          graph ; La arista ya existe, devuelve el grafo sin cambios.
+          (graph vertices (cons new-edge edges)))))) ; Añade la nueva arista.
+
+
+
+
+
+;(define vecinos
+;  (lambda (grafo nodo)
+;    (let ((bordes (edges-exp (Data-graph-edges-exp grafo))))
+;      (let loop ((bordes bordes) (vecinos '()))
+;        (cond
+;          ((null? bordes) vecinos)
+;          ((eq? (Data-edge-a (car bordes)) nodo)
+;           (loop (cdr bordes) (cons (Data-edge-b (car bordes)) vecinos)))
+;          ((eq? (Data-edge-b (car bordes)) nodo)
+;           (loop (cdr bordes) (cons (Data-edge-a (car bordes)) vecinos)))
+;          (else (loop (cdr bordes) vecinos))
+;          )
+;        )
+;      )
+;    )
+;  )
+
+
+
+
+
+
+
+
+
+
+
