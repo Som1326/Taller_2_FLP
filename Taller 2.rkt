@@ -197,20 +197,35 @@
 
 (define add-edge
   (lambda (graph edge)
-    (cond
-      ((graph? graph)
-       (let ((vertices (graph->vertices graph))
-             (edges (graph->edges graph)))
-         (if (or (member edge edges)
-                 (member (reverse edge) edges))
-             graph
-             (graph (vertices) (cons edge edges)))))
-      (else
-       (eopl:error "Invalid graph")))))
+    (cases Data-graph graph
+      (graph-exp (vertices edges)
+                 (let ((edges-list (edges-list edges)))
+                   (if (or (member edge edges-list)
+                           (member (reverse-edge edge) edges-list))
+                       graph
+                       (graph-exp vertices (edges-exp (cons edge edges-list)))))))))
+
+(define reverse-edge
+  (lambda (edge)
+    (cases Data-edge edge
+      (edge-exp (a b)
+                (edge-exp b a)))))
+
+(define edges-list
+  (lambda (edges)
+    (cases Data-edges edges
+      (edges-exp (edges-list)
+                 edges-list))))
 
 
 (define vecinos
   (lambda (graph node)
+    (define edges-list
+      (lambda (edges)
+        (cases Data-edges edges
+          (edges-exp (edges-list)
+                     edges-list))))
+    
     (cases Data-graph graph
       (graph-exp (vertices edges)
                  (let ((neighbor-nodes '()))
@@ -220,8 +235,61 @@
                                            (cond
                                              ((eq? a node) (set! neighbor-nodes (cons b neighbor-nodes)))
                                              ((eq? b node) (set! neighbor-nodes (cons a neighbor-nodes)))))))
-                             edges)
+                             (edges-list edges))
                    neighbor-nodes)))))
+
+
+
+
+
+
+
+; apartado de pruebas de add- edge 
+(define test-graph
+  (graph-exp
+    (vertices-exp (list 'a 'b 'c 'd))
+    (edges-exp
+      (list
+        (edge-exp 'a 'b)
+        (edge-exp 'c 'd)
+        (edge-exp 'c 'b)
+        (edge-exp 'a 'c)))))
+
+(display "Grafo original: ")
+(display test-graph)
+(newline)
+
+(define modified-graph (add-edge test-graph (edge-exp 'a 'd)))
+
+(display "Grafo modificado (añadiendo (a, d)): ")
+(display modified-graph)
+(newline)
+
+;Apartado de pruebas de vecinos
+
+(define test-graph2
+  (graph-exp
+    (vertices-exp (list 'a 'b 'c 'd))
+    (edges-exp
+      (list
+        (edge-exp 'a 'b)
+        (edge-exp 'c 'd)
+        (edge-exp 'c 'b)
+        (edge-exp 'a 'c)))))
+
+(display "Grafo original: ")
+(display test-graph2)
+(newline)
+
+(display "Vecinos de 'a': ")
+(display (vecinos test-graph2 'a))
+(newline)
+
+
+
+
+
+
 
 
 
