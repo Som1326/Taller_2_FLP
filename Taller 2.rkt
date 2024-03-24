@@ -1,6 +1,6 @@
 #lang eopl
 ;Sebastián Orrego Marín - 1941144
-;Franklin Aguirre ...
+;Franklin Aguirre - 1841743
 
 
 ;Implementación en Listas
@@ -195,15 +195,17 @@
 
 ; parte 3 del taller y posibles soluciones a los enunciados 
 
+;Función add-edge
+
 (define add-edge
   (lambda (graph edge)
     (cases Data-graph graph
       (graph-exp (vertices edges)
                  (let ((edges-list (edges-list edges)))
-                   (if (or (member edge edges-list)
-                           (member (reverse-edge edge) edges-list))
-                       graph
-                       (graph-exp vertices (edges-exp (cons edge edges-list)))))))))
+                   (if (or (member-aux (edge-exp (car edge) (cadr edge)) edges-list)
+                           (member-aux (reverse-edge (edge-exp (car edge) (cadr edge))) edges-list))
+                       (eopl:error "The given edge already exists in the graph")
+                       (graph-exp vertices (edges-exp (cons (edge-exp (car edge) (cadr edge)) edges-list)))))))))
 
 (define reverse-edge
   (lambda (edge)
@@ -217,6 +219,13 @@
       (edges-exp (edges-list)
                  edges-list))))
 
+(define (member-aux edge edges-list)
+  (let loop ((lst edges-list))
+    (cond ((null? lst) #f)
+          ((equal? edge (car lst)) #t)
+          (else (loop (cdr lst))))))
+
+;Función vecinos
 
 (define vecinos
   (lambda (graph node)
@@ -229,7 +238,7 @@
     (cases Data-graph graph
       (graph-exp (vertices edges)
                  (let ((neighbor-nodes '()))
-                   (for-each (lambda (edge)
+                   (my-for-each (lambda (edge)
                                (cases Data-edge edge
                                  (edge-exp (a b)
                                            (cond
@@ -238,99 +247,108 @@
                              (edges-list edges))
                    neighbor-nodes)))))
 
+(define (my-for-each proc lst)
+  (cond
+    ((null? lst) 'done)
+    (else
+     (proc (car lst))
+     (my-for-each proc (cdr lst)))))
 
+;Apartado de pruebas implementación en Listas
 
+(define test-graph-list1
+  (graph
+   (vertices '(a b c d))
+   (edges '((a b) (c d) (c b) (a c))))
+  )
 
+(define test-graph-list2
+  (graph
+   (vertices '(x y z w v))
+   (edges '((x w) (x y) (y v) (w z) (z y) (v w))))
+  )
 
+;Apartado de pruebas implementación en Datatypes
 
-
-; apartado de pruebas de add- edge 
-(define test-graph
+(define test-graph1
   (graph-exp
-    (vertices-exp (list 'a 'b 'c 'd))
+    (vertices-exp '(a b c d))
     (edges-exp
       (list
         (edge-exp 'a 'b)
         (edge-exp 'c 'd)
         (edge-exp 'c 'b)
-        (edge-exp 'a 'c)))))
-
-(display "Grafo original: ")
-(display test-graph)
-(newline)
-
-(define modified-graph (add-edge test-graph (edge-exp 'a 'd)))
-
-(display "Grafo modificado (añadiendo (a, d)): ")
-(display modified-graph)
-(newline)
-
-;Apartado de pruebas de vecinos
+        (edge-exp 'a 'c)))
+    )
+  )
 
 (define test-graph2
   (graph-exp
-    (vertices-exp (list 'a 'b 'c 'd))
+    (vertices-exp '(x y z w v))
     (edges-exp
       (list
-        (edge-exp 'a 'b)
-        (edge-exp 'c 'd)
-        (edge-exp 'c 'b)
-        (edge-exp 'a 'c)))))
+        (edge-exp 'x 'w)
+        (edge-exp 'x 'y)
+        (edge-exp 'y 'v)
+        (edge-exp 'w 'z)
+        (edge-exp 'z 'y)
+        (edge-exp 'v 'w)))
+    )
+  )
 
+;Apartado de pruebas de add-edge 
+
+(display "--------------------------------------------")
+(newline)
+(display "Pruebas de add-edge ")
+(newline)
+(display "Grafo original 1: ")
+(newline)
+(display test-graph1)
+(newline)
+(newline)
+
+(define modified-graph1 (add-edge test-graph1 '(a d)))
+
+(display "Grafo 1 modificado (añadiendo (a, d)): ")
+(newline)
+
+(display modified-graph1)
+(newline)
+(newline)
+
+(display "Grafo original 2: ")
+(newline)
+(display test-graph2)
+(newline)
+(newline)
+
+(define modified-graph2 (add-edge test-graph2 '(w y)))
+
+(display "Grafo 2 modificado (añadiendo (w, y)): ")
+(newline)
+
+(display modified-graph2)
+(newline)
+(newline)
+(display "--------------------------------------------")
+(newline)
+
+
+;Apartado de pruebas de vecinos
+
+(display "Pruebas de vecinos ")
+(newline)
 (display "Grafo original: ")
 (display test-graph2)
 (newline)
-
-(display "Vecinos de 'a': ")
-(display (vecinos test-graph2 'a))
 (newline)
 
+(display "Vecinos de 'a': ")
+(display (vecinos test-graph1 'a))
+(newline)
+(newline)
 
-
-
-
-
-
-
-
-;(define add-edge
-;  (lambda (graph edge)
-;    (let* ((edges (graph->edges graph))
-;           (vertices (graph->vertices graph))
-;           (new-edge (list (car edge) (cadr edge)))
-;           (reverse-edge (list (cadr edge) (car edge))))
-;      (if (or (member new-edge edges) (member reverse-edge edges))
-;          graph ; La arista ya existe, devuelve el grafo sin cambios.
-;          (graph vertices (cons new-edge edges)))))) ; Añade la nueva arista.
-
-
-
-
-
-;(define vecinos
-;  (lambda (grafo nodo)
-;    (let ((bordes (edges-exp (Data-graph-edges-exp grafo))))
-;      (let loop ((bordes bordes) (vecinos '()))
-;        (cond
-;          ((null? bordes) vecinos)
-;          ((eq? (Data-edge-a (car bordes)) nodo)
-;           (loop (cdr bordes) (cons (Data-edge-b (car bordes)) vecinos)))
-;          ((eq? (Data-edge-b (car bordes)) nodo)
-;           (loop (cdr bordes) (cons (Data-edge-a (car bordes)) vecinos)))
-;          (else (loop (cdr bordes) vecinos))
-;          )
-;        )
-;      )
-;    )
-;  )
-
-
-
-
-
-
-
-
-
-
-
+(display "Vecinos de 'x': ")
+(display (vecinos test-graph2 'x))
+(newline)
