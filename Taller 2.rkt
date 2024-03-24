@@ -229,30 +229,25 @@
 
 (define vecinos
   (lambda (graph node)
-    (define edges-list
-      (lambda (edges)
-        (cases Data-edges edges
-          (edges-exp (edges-list)
-                     edges-list))))
-    
-    (cases Data-graph graph
-      (graph-exp (vertices edges)
-                 (let ((neighbor-nodes '()))
-                   (my-for-each (lambda (edge)
-                               (cases Data-edge edge
-                                 (edge-exp (a b)
-                                           (cond
-                                             ((eq? a node) (set! neighbor-nodes (cons b neighbor-nodes)))
-                                             ((eq? b node) (set! neighbor-nodes (cons a neighbor-nodes)))))))
-                             (edges-list edges))
-                   neighbor-nodes)))))
-
-(define (my-for-each proc lst)
-  (cond
-    ((null? lst) 'done)
-    (else
-     (proc (car lst))
-     (my-for-each proc (cdr lst)))))
+    (letrec ((edges-list
+              (lambda (edges)
+                (cases Data-edges edges
+                  (edges-exp (edges-list)
+                             edges-list))))
+             (find-neighbors
+              (lambda (edges)
+                (if (null? edges)
+                    '()
+                    (let ((edge (car edges)))
+                      (cases Data-edge edge
+                        (edge-exp (a b)
+                                  (cond
+                                    ((eq? a node) (cons b (find-neighbors (cdr edges))))
+                                    ((eq? b node) (cons a (find-neighbors (cdr edges))))
+                                    (else (find-neighbors (cdr edges)))))))))))
+      (cases Data-graph graph
+        (graph-exp (vertices edges)
+                   (find-neighbors (edges-list edges)))))))
 
 ;Apartado de pruebas implementación en Listas
 
