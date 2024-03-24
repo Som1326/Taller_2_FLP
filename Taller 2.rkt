@@ -195,17 +195,45 @@
 
 ; parte 3 del taller y posibles soluciones a los enunciados 
 
-
-
 (define add-edge
   (lambda (graph edge)
-    (let* ((edges (graph->edges graph))
-           (vertices (graph->vertices graph))
-           (new-edge (list (car edge) (cadr edge)))
-           (reverse-edge (list (cadr edge) (car edge))))
-      (if (or (member new-edge edges) (member reverse-edge edges))
-          graph ; La arista ya existe, devuelve el grafo sin cambios.
-          (graph vertices (cons new-edge edges)))))) ; Añade la nueva arista.
+    (cond
+      ((graph? graph)
+       (let ((vertices (graph->vertices graph))
+             (edges (graph->edges graph)))
+         (if (or (member edge edges)
+                 (member (reverse edge) edges))
+             graph
+             (graph (vertices) (cons edge edges)))))
+      (else
+       (eopl:error "Invalid graph")))))
+
+
+(define vecinos
+  (lambda (graph node)
+    (cases Data-graph graph
+      (graph-exp (vertices edges)
+                 (let ((neighbor-nodes '()))
+                   (for-each (lambda (edge)
+                               (cases Data-edge edge
+                                 (edge-exp (a b)
+                                           (cond
+                                             ((eq? a node) (set! neighbor-nodes (cons b neighbor-nodes)))
+                                             ((eq? b node) (set! neighbor-nodes (cons a neighbor-nodes)))))))
+                             edges)
+                   neighbor-nodes)))))
+
+
+
+;(define add-edge
+;  (lambda (graph edge)
+;    (let* ((edges (graph->edges graph))
+;           (vertices (graph->vertices graph))
+;           (new-edge (list (car edge) (cadr edge)))
+;           (reverse-edge (list (cadr edge) (car edge))))
+;      (if (or (member new-edge edges) (member reverse-edge edges))
+;          graph ; La arista ya existe, devuelve el grafo sin cambios.
+;          (graph vertices (cons new-edge edges)))))) ; Añade la nueva arista.
 
 
 
