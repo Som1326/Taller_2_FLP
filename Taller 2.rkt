@@ -333,6 +333,28 @@
     )
   )
 
+;Apartado de pruebas PARSEBNF
+
+(define test-PARSEBNF1
+  (PARSEBNF test-graph-list1))
+
+(define test-PARSEBNF2
+  (PARSEBNF test-graph-list2))
+
+(define test-PARSEBNF3
+  (PARSEBNF test-graph-list3))
+
+;Apartado de pruebas UNPARSEBNF
+
+(define test-UNPARSEBNF1
+  (UNPARSEBNF test-graph1))
+
+(define test-UNPARSEBNF2
+  (UNPARSEBNF test-graph2))
+
+(define test-UNPARSEBNF3
+  (UNPARSEBNF test-graph3))
+
 ;Apartado de pruebas de add-edge 
 
 (display "--------------------------------------------")
