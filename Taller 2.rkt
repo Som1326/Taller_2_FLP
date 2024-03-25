@@ -124,15 +124,6 @@
 
 ;Función PARSEBNF
 
-(define parseMap
-  (lambda (l1)
-    (if (null? l1)
-        empty
-        (cons (edge-exp (caar l1) (cadar l1)) (parseMap (cdr l1)))
-        )
-    )
-  )
-
 (define PARSEBNF
   (lambda (dato)
     (cond
@@ -141,6 +132,18 @@
       [(eqv? (car dato) 'edges) (edges-exp (PARSEBNF (cons 'edge (cadr dato))))]
       [(eqv? (car dato) 'edge) (parseMap (cdr dato))]
       )
+    )
+  )
+
+;Función auxiliar de PARSEBNF
+;parseMap: EL objetivo de esta función es convertir una lista de pares de vertices (arista) a su estructura de dato en datatype.
+
+(define parseMap
+  (lambda (l1)
+    (if (null? l1)
+        empty
+        (cons (edge-exp (caar l1) (cadar l1)) (parseMap (cdr l1)))
+        )
     )
   )
       
@@ -173,6 +176,10 @@
     )
   )
 
+;Función auxiliar unparseMap
+;unparseMap: El objetivo de esta función es convertir un cada uno de los pares edge (edges-list) estructurados dentro del Data-edges
+;por medio de la siguiente función UNPARSE-edge.
+
 (define unparseMap
   (lambda (l1)
     (if (null? l1)
@@ -193,7 +200,7 @@
     )
   )
 
-; parte 3 del taller y posibles soluciones a los enunciados 
+;Funciones sobre grafos no dirigidos 
 
 ;Función add-edge
 
@@ -205,7 +212,19 @@
                    (if (or (member-aux (edge-exp (car edge) (cadr edge)) edges-list)
                            (member-aux (reverse-edge (edge-exp (car edge) (cadr edge))) edges-list))
                        (eopl:error "The given edge already exists in the graph")
-                       (graph-exp vertices (edges-exp (cons (edge-exp (car edge) (cadr edge)) edges-list)))))))))
+                       (PARSEBNF (list 'graph (cadr (UNPARSEBNF graph)) (list 'edges (cons-in-the-end (car (cdaddr (UNPARSEBNF graph))) (UNPARSEBNF-edge (edge-exp (car edge) (cadr edge)))))))))))))
+
+;Función auxiliar cons-in-the-end
+;cons-in-the-end: EL objetivo de esta función es añadir un elemento en la posición final de una lista.
+
+(define cons-in-the-end
+  (lambda (list- element-)
+    (cond
+      ((null? list-) (list element-))
+      (else (cons (car list-) (cons-in-the-end (cdr list-) element-))))))
+
+;Función auxiliar reverse-edge
+;reverse-edge: EL objetivo de esta función es revertir la posición de un edge-exp dado. Ej: (a b)->(b a).
 
 (define reverse-edge
   (lambda (edge)
@@ -213,11 +232,17 @@
       (edge-exp (a b)
                 (edge-exp b a)))))
 
+;Función auxiliar edges-list
+;edges-list: EL objetivo de esta función es ...
+
 (define edges-list
   (lambda (edges)
     (cases Data-edges edges
       (edges-exp (edges-list)
                  edges-list))))
+
+;Función auxiliar member-aux
+;member-aux: EL objetivo de esta función es determinar si un elemento pertenece a una lista.
 
 (define (member-aux edge edges-list)
   (let loop ((lst edges-list))
@@ -263,6 +288,12 @@
    (edges '((x w) (x y) (y v) (w z) (z y) (v w))))
   )
 
+(define test-graph-list3
+  (graph
+   (vertices '(Pera Manzana Banano Piña))
+   (edges '((Pera Manzana) (Manzana Piña) (Banano Piña))))
+  )
+
 ;Apartado de pruebas implementación en Datatypes
 
 (define test-graph1
@@ -288,6 +319,17 @@
         (edge-exp 'w 'z)
         (edge-exp 'z 'y)
         (edge-exp 'v 'w)))
+    )
+  )
+
+(define test-graph3
+  (graph-exp
+    (vertices-exp '(Pera Manzana Banano Piña))
+    (edges-exp
+      (list
+        (edge-exp 'Pera 'Manzana)
+        (edge-exp 'Manzana 'Piña)
+        (edge-exp 'Banano 'Piña)))
     )
   )
 
